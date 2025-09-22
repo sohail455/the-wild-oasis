@@ -5,6 +5,10 @@ import Form from "../../ui/Form";
 import Button from "../../ui/Button";
 import FileInput from "../../ui/FileInput";
 import Textarea from "../../ui/Textarea";
+import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createCabin } from "../../services/apiCabins";
+import toast from "react-hot-toast";
 
 const FormRow = styled.div`
   display: grid;
@@ -43,36 +47,106 @@ const Error = styled.span`
 `;
 
 function CreateCabinForm() {
+  const { register, handleSubmit, reset, formState, getValues } = useForm();
+  const queryClient = useQueryClient();
+  const { isLoading: isCreated, mutate } = useMutation({
+    mutationFn: createCabin,
+    onSuccess: () => {
+      toast.success("Cabin created succeessfully");
+      queryClient.invalidateQueries({ queryKey: ["cabins"] });
+      reset();
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+  const { errors } = formState;
+  console.log(errors.maxCapacity);
+
+  function onSubmit(data) {
+    mutate({ ...data, image: data.image[0] });
+  }
+
+  function onError(err) {
+    console.log(err);
+  }
+
   return (
-    <Form>
+    <Form onSubmit={handleSubmit(onSubmit, onError)}>
       <FormRow>
         <Label htmlFor="name">Cabin name</Label>
-        <Input type="text" id="name" />
+        <Input
+          disabled={isCreated}
+          type="text"
+          id="name"
+          {...register("name", { required: "this field is requirde" })}
+        />
+        {errors?.name?.message && <Error>{errors.name.message}</Error>}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="maxCapacity">Maximum capacity</Label>
-        <Input type="number" id="maxCapacity" />
+        <Input
+          disabled={isCreated}
+          type="number"
+          id="maxCapacity"
+          {...register("maxCapacity", {
+            required: "this field is requirde",
+            min: { value: 1, message: "should be one or more" },
+          })}
+        />
+        {errors?.maxCapacity?.message && (
+          <Error>{errors.maxCapacity.message}</Error>
+        )}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="regularPrice">Regular price</Label>
-        <Input type="number" id="regularPrice" />
+        <Input
+          disabled={isCreated}
+          type="number"
+          id="regularPrice"
+          {...register("regularPrice", { required: "this field is requirde" })}
+        />
+        {errors?.regularPrice?.message && (
+          <Error>{errors.regularPrice.message}</Error>
+        )}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="discount">Discount</Label>
-        <Input type="number" id="discount" defaultValue={0} />
+        <Input
+          disabled={isCreated}
+          type="number"
+          id="discount"
+          defaultValue={0}
+          {...register("discount", {
+            required: "this field is requirde",
+            validate: (value) =>
+              value <= getValues("regularPrice") ||
+              "Discount should be equal or less than the price",
+          })}
+        />
+        {errors?.discount?.message && <Error>{errors.discount.message}</Error>}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="description">Description for website</Label>
-        <Textarea type="number" id="description" defaultValue="" />
+        <Textarea
+          disabled={isCreated}
+          type="number"
+          id="description"
+          defaultValue=""
+          {...register("description", { required: "this field is requirde " })}
+        />
+        {errors?.description?.message && (
+          <Error>{errors.description.message}</Error>
+        )}
       </FormRow>
 
       <FormRow>
         <Label htmlFor="image">Cabin photo</Label>
-        <FileInput id="image" accept="image/*" />
+        <FileInput id="image" accept="image/*" {...register("image")} />
       </FormRow>
 
       <FormRow>
@@ -80,7 +154,7 @@ function CreateCabinForm() {
         <Button variation="secondary" type="reset">
           Cancel
         </Button>
-        <Button>Edit cabin</Button>
+        <Button disabled={isCreated}>Add cabin</Button>
       </FormRow>
     </Form>
   );
