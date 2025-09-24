@@ -45,7 +45,7 @@ const Error = styled.span`
   color: var(--color-red-700);
 `;
 
-function CreateCabinForm({ cabinToEdit = {} }) {
+function CreateCabinForm({ cabinToEdit = {}, onCancelClick }) {
   const { id: EditId, ...editValues } = cabinToEdit;
   const isEdditSession = Boolean(EditId);
   const { register, handleSubmit, reset, formState, getValues } = useForm({
@@ -63,8 +63,25 @@ function CreateCabinForm({ cabinToEdit = {} }) {
     const image = typeof data.image === "string" ? data.image : data.image[0];
     console.log(image);
     if (isEdditSession)
-      editCabin({ newCabin: { ...data, image: image }, EditId });
-    else createCabin({ ...data, image: image });
+      editCabin(
+        { newCabin: { ...data, image: image }, EditId },
+        {
+          onSuccess: () => {
+            reset();
+            onCancelClick?.(false);
+          },
+        }
+      );
+    else
+      createCabin(
+        { ...data, image: image },
+        {
+          onSuccess: () => {
+            reset();
+            onCancelClick?.(false);
+          },
+        }
+      );
   }
 
   function onError(err) {
@@ -157,7 +174,11 @@ function CreateCabinForm({ cabinToEdit = {} }) {
 
       <FormRow>
         {/* type is an HTML attribute! */}
-        <Button variation="secondary" type="reset">
+        <Button
+          variation="secondary"
+          type="reset"
+          onClick={() => onCancelClick?.(false)}
+        >
           Cancel
         </Button>
         <Button disabled={isWorking}>
