@@ -1,3 +1,6 @@
+import { createContext, useContext, useState } from "react";
+import { createPortal } from "react-dom";
+import { HiDotsVertical } from "react-icons/hi";
 import styled from "styled-components";
 
 const StyledMenu = styled.div`
@@ -60,3 +63,62 @@ const StyledButton = styled.button`
     transition: all 0.3s;
   }
 `;
+
+const menuContext = createContext();
+
+function Menus({ children }) {
+  const [openName, setOpenName] = useState("");
+  const [pos, setPos] = useState("");
+  const open = setOpenName;
+  const close = () => setOpenName("");
+  return (
+    <menuContext.Provider value={{ openName, close, open, pos, setPos }}>
+      {children}
+    </menuContext.Provider>
+  );
+}
+
+function Menu({ children }) {
+  return <StyledMenu>{children}</StyledMenu>;
+}
+
+function Toggle({ id }) {
+  const { close, open, openName, setPos } = useContext(menuContext);
+
+  function handleClick(e) {
+    const rect = e.target.closest("button").getBoundingClientRect();
+    console.log(rect);
+    setPos({
+      x: window.innerWidth - rect.x - rect.width,
+      y: rect.y + rect.height + 8,
+    });
+    if (openName === id) close();
+    else open(id);
+  }
+
+  return (
+    <StyledToggle onClick={handleClick}>
+      <HiDotsVertical />
+    </StyledToggle>
+  );
+}
+
+function List({ id, children }) {
+  const { openName, pos } = useContext(menuContext);
+  if (id !== openName) return;
+  return createPortal(
+    <StyledList position={pos}>{children}</StyledList>,
+    document.body
+  );
+}
+
+function Button({ children }) {
+  return <StyledButton>{children}</StyledButton>;
+}
+
+Menus.Menu = Menu;
+Menus.Toggle = Toggle;
+Menus.List = List;
+Menus.Button = Button;
+
+export default Menus;
