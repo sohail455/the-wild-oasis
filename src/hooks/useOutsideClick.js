@@ -16,5 +16,5 @@ export default function useOutsideClick(handel, detectOnCapture = true) {
     },
     [handel, detectOnCapture]
   );
-  return { ref };
+  return ref;
 }

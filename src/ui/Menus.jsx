@@ -1,7 +1,8 @@
-import { createContext, useContext, useState } from "react";
+import { cloneElement, createContext, useContext, useState } from "react";
 import { createPortal } from "react-dom";
 import { HiDotsVertical } from "react-icons/hi";
 import styled from "styled-components";
+import useOutsideClick from "../hooks/useOutsideClick";
 
 const StyledMenu = styled.div`
   display: flex;
@@ -104,16 +105,29 @@ function Toggle({ id }) {
 }
 
 function List({ id, children }) {
-  const { openName, pos } = useContext(menuContext);
+  const { openName, pos, close } = useContext(menuContext);
+  const ref = useOutsideClick(close);
   if (id !== openName) return;
   return createPortal(
-    <StyledList position={pos}>{children}</StyledList>,
+    <StyledList position={pos} ref={ref}>
+      {children}
+    </StyledList>,
     document.body
   );
 }
 
-function Button({ children }) {
-  return <StyledButton>{children}</StyledButton>;
+function Button({ children, onClick, icon }) {
+  const { close } = useContext(menuContext);
+  function handleOnClick() {
+    onClick?.();
+    close();
+  }
+  return (
+    <StyledButton onClick={handleOnClick}>
+      <span>{icon}</span>
+      {children}
+    </StyledButton>
+  );
 }
 
 Menus.Menu = Menu;

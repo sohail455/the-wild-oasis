@@ -73,50 +73,34 @@ function CabinRow({ cabin }) {
           <span>&mdash;</span>
         )}
         <div>
-          <button onClick={handelCopy} disabled={isCreated}>
-            <span>
-              <HiSquare2Stack />
-            </span>
-          </button>
           <Modal>
-            <Modal.Open opens={"edit-form"}>
-              <button
-                onClick={() => {
-                  setShowEdit((prev) => !prev);
-                }}
-              >
-                <span>
-                  <HiPencil />
-                </span>
-              </button>
-            </Modal.Open>
-            <Modal.Window opens={"edit-form"}>
-              <CreateCabinForm cabinToEdit={cabin} />
-            </Modal.Window>
+            <Menus.Menu>
+              <Menus.Toggle id={cabinId} />
+              <Menus.List id={cabinId}>
+                <Menus.Button icon={<HiSquare2Stack />} onClick={handelCopy}>
+                  Dublicate
+                </Menus.Button>
+
+                <Modal.Open opens={"edit-form"}>
+                  <Menus.Button icon={<HiPencil />}>Edit</Menus.Button>
+                </Modal.Open>
+
+                <Modal.Open>
+                  <Menus.Button icon={<HiTrash />}>Delete</Menus.Button>
+                </Modal.Open>
+              </Menus.List>
+              <Modal.Window opens={"edit-form"}>
+                <CreateCabinForm cabinToEdit={cabin} />
+              </Modal.Window>
+
+              <Modal.Window>
+                <ConfirmDelete
+                  onConfirm={() => deleteCabin(cabinId)}
+                  disabled={isDeleting}
+                />
+              </Modal.Window>
+            </Menus.Menu>
           </Modal>
-          <Modal>
-            <Modal.Open>
-              <button>
-                <span>
-                  <HiTrash />
-                </span>
-              </button>
-            </Modal.Open>
-            <Modal.Window>
-              <ConfirmDelete
-                onConfirm={() => deleteCabin(cabinId)}
-                disabled={isDeleting}
-              />
-            </Modal.Window>
-          </Modal>
-          <Menus.Menu>
-            <Menus.Toggle id={cabinId} />
-            <Menus.List id={cabinId}>
-              <Menus.Button>Delete</Menus.Button>
-              <Menus.Button>Dublicate</Menus.Button>
-              <Menus.Button>Edit</Menus.Button>
-            </Menus.List>
-          </Menus.Menu>
         </div>
       </Table.Row>
     </>
