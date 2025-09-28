@@ -1,10 +1,36 @@
 import { getToday } from "../utils/helpers";
-import supabase from "./supabase";
+import supabase from "./SupabaseClient";
+import { PAGE_SIZE } from "../utils/constants";
+
+export async function getBookings({ filter, sorting, page }) {
+  let query = supabase
+    .from("Bookings")
+    .select("*, Cabins(name), Guests(fullName, email)", { count: "exact" });
+
+  if (filter !== null) query = query.eq(filter.field, filter.value);
+
+  if (sorting !== null)
+    query = query.order(sorting.field, { ascending: sorting.value === "asc" });
+
+  if (page !== null) {
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    query = query.range(from, to);
+  }
+  const { data, error, count } = await query;
+
+  if (error) {
+    console.error(error);
+    throw new Error("Booking not found");
+  }
+
+  return { data, count };
+}
 
 export async function getBooking(id) {
   const { data, error } = await supabase
-    .from("bookings")
-    .select("*, cabins(*), guests(*)")
+    .from("Bookings")
+    .select("*, Cabins(*), Guests(*)")
     .eq("id", id)
     .single();
 
@@ -71,8 +97,9 @@ export async function getStaysTodayActivity() {
 }
 
 export async function updateBooking(id, obj) {
+  console.log(id, obj);
   const { data, error } = await supabase
-    .from("bookings")
+    .from("Bookings")
     .update(obj)
     .eq("id", id)
     .select()

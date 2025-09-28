@@ -6,24 +6,28 @@ import CabinRow from "./CabinRow";
 import Table from "../../ui/Table";
 import Menus from "../../ui/Menus";
 import { useSearchParams } from "react-router-dom";
+import SortBy from "../../ui/SortBy";
 
 function CabinTable() {
-  const {
-    isLoading,
-    data: cabins,
-    error,
-  } = useQuery({
+  const { isLoading, data: cabins } = useQuery({
     queryKey: ["cabins"],
     queryFn: getCabins,
   });
-  const [searchParam] = useSearchParams();
-  const filterValue = searchParam.get("discount") || "all";
+  const [searchParams] = useSearchParams();
+  const filterValue = searchParams.get("discount") || "all";
   let filteredCabins;
   if (filterValue === "all") filteredCabins = cabins;
-  if (filterValue === "with-disc")
-    filteredCabins = cabins.filter((cabin) => cabin.discount === 0);
-  if (filterValue === "without-disc")
-    filteredCabins = cabins.filter((cabin) => cabin.discount > 0);
+  else if (filterValue === "without-disc")
+    filteredCabins = cabins?.filter((cabin) => cabin.discount === 0);
+  else if (filterValue === "with-disc")
+    filteredCabins = cabins?.filter((cabin) => cabin.discount > 0);
+
+  const sortBy = searchParams.get("sortBy") || "name-asc";
+
+  const [value, type] = sortBy.split("-");
+  console.log(value, type);
+  const x = type === "asc" ? 1 : -1;
+  filteredCabins?.sort((a, b) => (a[value] - b[value]) * x);
 
   if (isLoading) return <Spinner />;
   return (

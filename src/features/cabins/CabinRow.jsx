@@ -38,7 +38,6 @@ const Discount = styled.div`
 `;
 
 function CabinRow({ cabin }) {
-  const [showEdit, setShowEdit] = useState(false);
   const {
     id: cabinId,
     name,
