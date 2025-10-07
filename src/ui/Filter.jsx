@@ -42,6 +42,10 @@ function Filter({ filterName, filterOptions }) {
   function handlesettingfilter(value) {
     searchparam.set(filterName, value);
     setSearchParam(searchparam);
+    if (searchparam.get("page")) {
+      searchparam.set("page", 1);
+      setSearchParam(searchparam);
+    }
   }
   return (
     <StyledFilter>

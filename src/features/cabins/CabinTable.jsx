@@ -13,9 +13,12 @@ function CabinTable() {
     queryKey: ["cabins"],
     queryFn: getCabins,
   });
+
   const [searchParams] = useSearchParams();
+
   const filterValue = searchParams.get("discount") || "all";
   let filteredCabins;
+
   if (filterValue === "all") filteredCabins = cabins;
   else if (filterValue === "without-disc")
     filteredCabins = cabins?.filter((cabin) => cabin.discount === 0);
@@ -30,6 +33,7 @@ function CabinTable() {
   filteredCabins?.sort((a, b) => (a[value] - b[value]) * x);
 
   if (isLoading) return <Spinner />;
+
   return (
     <Menus>
       <Table columns="0.6fr 1.8fr 2.2fr 1fr 1fr 1fr">
