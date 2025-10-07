@@ -12,6 +12,8 @@ import Spinner from "../../ui/Spinner";
 import Checkbox from "../../ui/Checkbox";
 import { useEffect, useState } from "react";
 import useCheckIn from "./useCheckIn";
+import { formatCurrency } from "../../utils/helpers";
+import useSettings from "../settings/useSettings";
 const Box = styled.div`
   /* Box */
   background-color: var(--color-grey-0);
@@ -22,6 +24,8 @@ const Box = styled.div`
 
 function CheckinBooking() {
   const [checkValue, setCheckValue] = useState(false);
+  const [addBreakfast, setAddBreakfast] = useState(false);
+  const { settings, isLoading: isLoadingSettings } = useSettings();
   const moveBack = useMoveBack();
   const { booking, isLoading } = useBooking();
 
@@ -47,7 +51,19 @@ function CheckinBooking() {
   function handleCheckin() {
     if (!checkValue) return;
 
-    checkIn(bookingId);
+    if (addBreakfast) {
+      checkIn({
+        id: bookingId,
+        breakfast: {
+          hasBreakfast: true,
+          extraPrice: settings.breakfastPrice * numGuests * numberNights,
+          totalPrice:
+            totalPrice + settings.breakfastPrice * numGuests * numberNights,
+        },
+      });
+    } else {
+      checkIn({ id: bookingId, breakfast: {} });
+    }
   }
 
   return (
@@ -62,13 +78,34 @@ function CheckinBooking() {
       <Box>
         <Checkbox
           type="checkbox"
+          checked={addBreakfast}
+          onChange={() => {
+            setAddBreakfast((prev) => !prev);
+            setCheckValue(false);
+          }}
+          disabled={hasBreakfast}
+          id={"add-breakfast"}
+        >
+          I want to add breakfast cost{" "}
+          {formatCurrency(settings?.breakfastPrice)}
+        </Checkbox>
+      </Box>
+
+      <Box>
+        <Checkbox
+          type="checkbox"
           onChange={() => setCheckValue((prev) => !prev)}
           checked={checkValue}
           disabled={checkValue || isUpdating}
           id={"checked-in"}
         >
           I Confimed That <strong>{Guests.fullName}</strong> Has Paid The Total
-          Amount
+          Amount for{" "}
+          {addBreakfast
+            ? formatCurrency(
+                totalPrice + settings.breakfastPrice * numberNights * numGuests
+              )
+            : formatCurrency(totalPrice)}
         </Checkbox>
       </Box>
       <ButtonGroup>

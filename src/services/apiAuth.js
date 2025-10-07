@@ -22,3 +22,18 @@ export async function logout() {
   const { error } = await supabase.auth.signOut();
   if (error) throw new Error("can not sign out");
 }
+
+export async function signup({ email, password, fullname }) {
+  const { error, data } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        name: fullname,
+        avatar: "",
+      },
+    },
+  });
+  if (error) throw error;
+  return data;
+}
